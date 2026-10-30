@@ -1,0 +1,80 @@
+{
+  "name": "Daily Morning Commute Train Delay Digest (Slack)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 8 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "aaaa1111-1111-1111-1111-111111111111",
+      "name": "Weekdays 8:30 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "resource": "liveStatus",
+        "operation": "getStatus",
+        "trainNumber": "12004"
+      },
+      "id": "bbbb2222-2222-2222-2222-222222222222",
+      "name": "Fetch Commute Train Status",
+      "type": "n8n-nodes-irctc.irctc",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "credentials": {
+        "irctcApi": {
+          "id": "1",
+          "name": "IRCTC Official Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "webhookUri": "YOUR_SLACK_INCOMING_WEBHOOK_URL",
+        "text": "=🚂 *Morning Commute Train Update*\n\n• *Train*: {{ $json.data.trainNumber }} - {{ $json.data.trainName }}\n• *Status*: {{ $json.data.delayMinutes > 0 ? '🔴 Delayed by ' + $json.data.delayMinutes + ' mins' : '🟢 ON TIME' }}\n• *Next Halt*: {{ $json.data.nextStationName }} (Platform {{ $json.data.platform }})\n\n⚡ _Powered by irctc.dev_",
+        "otherOptions": {}
+      },
+      "id": "cccc3333-3333-3333-3333-333333333333",
+      "name": "Post to Slack Commute Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [660, 300]
+    }
+  ],
+  "connections": {
+    "Weekdays 8:30 AM": {
+      "main": [
+        [
+          {
+            "node": "Fetch Commute Train Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Commute Train Status": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack Commute Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

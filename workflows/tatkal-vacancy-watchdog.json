@@ -1,0 +1,118 @@
+{
+  "name": "Tatkal & Post-Charting Vacant Berths Watchdog",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "10000000-0000-0000-0000-000000000001",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "resource": "trains",
+        "operation": "getChartVacant",
+        "trainNumber": "12557",
+        "boardingStation": "GKP",
+        "travelClass": "3A"
+      },
+      "id": "20000000-0000-0000-0000-000000000002",
+      "name": "Check Vacant Berths Post-Chart",
+      "type": "n8n-nodes-irctc.irctc",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "credentials": {
+        "irctcApi": {
+          "id": "1",
+          "name": "IRCTC Official Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.data.isChartPrepared }}",
+              "value2": true
+            }
+          ],
+          "number": [
+            {
+              "value1": "={{ $json.data.totalVacantBerths }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "30000000-0000-0000-0000-000000000003",
+      "name": "Are Vacant Seats Available?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🚨 *CURRENT BOOKING VACANT SEATS ALERT!*\n\n• *Train*: {{ $json.data.trainNumber }} ({{ $json.data.trainName }})\n• *Boarding Station*: {{ $json.data.boardingStation }}\n• *Total Vacant Berths*: *{{ $json.data.totalVacantBerths }}*\n• *First Available Berth*: Coach {{ $json.data.vacantBerths[0].coach }} / Berth {{ $json.data.vacantBerths[0].berthNumber }} ({{ $json.data.vacantBerths[0].berthType }})\n\n👉 Book immediately on IRCTC App under *Current Booking*!\n\n⚡ _Powered by irctc.dev_",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "40000000-0000-0000-0000-000000000004",
+      "name": "Send Vacant Seats Telegram Push",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, 240]
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Check Vacant Berths Post-Chart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Vacant Berths Post-Chart": {
+      "main": [
+        [
+          {
+            "node": "Are Vacant Seats Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Are Vacant Seats Available?": {
+      "main": [
+        [
+          {
+            "node": "Send Vacant Seats Telegram Push",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

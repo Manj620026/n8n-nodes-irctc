@@ -1,0 +1,110 @@
+{
+  "name": "Automated IRCTC PNR Confirmation Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "11111111-1111-1111-1111-111111111111",
+      "name": "Every 30 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "resource": "pnr",
+        "operation": "check",
+        "pnrNumber": "2265248473"
+      },
+      "id": "22222222-2222-2222-2222-222222222222",
+      "name": "Check PNR Status",
+      "type": "n8n-nodes-irctc.irctc",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "credentials": {
+        "irctcApi": {
+          "id": "1",
+          "name": "IRCTC Official Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.data.passengers[0].currentStatus }}",
+              "operation": "contains",
+              "value2": "CNF"
+            }
+          ]
+        }
+      },
+      "id": "33333333-3333-3333-3333-333333333333",
+      "name": "Is Ticket Confirmed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🎉 *GOOD NEWS: YOUR TICKET IS CONFIRMED!*\n\n• *Train*: {{ $json.data.trainNumber }} - {{ $json.data.trainName }}\n• *Passenger 1*: Coach {{ $json.data.passengers[0].coach }} / Berth {{ $json.data.passengers[0].berthNumber }} ({{ $json.data.passengers[0].berth }})\n• *Date*: {{ $json.data.dateOfJourney }}\n\n⚡ _Powered by irctc.dev_",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "44444444-4444-4444-4444-444444444444",
+      "name": "Send Telegram Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, 240]
+    }
+  ],
+  "connections": {
+    "Every 30 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Check PNR Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PNR Status": {
+      "main": [
+        [
+          {
+            "node": "Is Ticket Confirmed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Ticket Confirmed?": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

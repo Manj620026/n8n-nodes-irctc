@@ -1,0 +1,48 @@
+{
+  "name": "n8n-nodes-irctc",
+  "version": "1.0.1",
+  "description": "Official n8n community node for Indian Railways API (irctc.dev). Automate PNR checks, live train tracking, seat availability forecasts, and vacant berths alerts.",
+  "main": "nodes/Irctc/Irctc.node.js",
+  "scripts": {
+    "test": "node test/test-n8n.js"
+  },
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "irctc",
+    "indian-railways",
+    "pnr-status",
+    "train-tracking",
+    "railway-api",
+    "automation"
+  ],
+  "author": "IRCTC API Team <support@irctc.dev>",
+  "license": "MIT",
+  "homepage": "https://irctc.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Manj620026/n8n-nodes-irctc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Manj620026/n8n-nodes-irctc/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "credentials/IrctcApi.credentials.js"
+    ],
+    "nodes": [
+      "nodes/Irctc/Irctc.node.js"
+    ]
+  },
+  "files": [
+    "credentials",
+    "nodes",
+    "workflows",
+    "README.md",
+    "LICENSE"
+  ]
+}
